@@ -1,10 +1,12 @@
-from supervisor import ticks_ms
-from kmk.modules import Module
-import time
 import board
 import busio
 import digitalio
+
+import time
 from adafruit_lsm6ds.lsm6ds3 import LSM6DS3
+
+from kmk.modules import Module
+
 
 class ImuHandler(Module):
     def __init__(self, up=None, right=None, down=None, left=None, debug=False):
@@ -88,11 +90,13 @@ class ImuPositionReporter:
     to the ground. USB-C connector points to the direction.
 
     """
-    UNKNOWN = 0    
+
+    UNKNOWN = 0
     UP = 1
     LEFT = 2
     RIGHT = 3
     DOWN = 4
+
     def __init__(self, sensor, debounce_cycles=4, low_water=8.5):
         """Pass ctor LSM6DS3 accelerometer object, and optionally a
         number of debounce_cycles and an axis low water mark.
@@ -131,7 +135,11 @@ class ImuPositionReporter:
                 self.reading_count += 1
             else:
                 self.reading_count = 0
-            if pos != self.position and pos == self.last_position and self.reading_count > self.debounce_cycles:
+            if (
+                pos != self.position
+                and pos == self.last_position
+                and self.reading_count > self.debounce_cycles
+            ):
                 self.position = pos
                 result = [pos, True]
         # Report last position with no change
@@ -145,7 +153,7 @@ class ImuPositionReporter:
         UNKNOWN if somewhere in between. This provides a 'notchy'
         decoding of the direction.
 
-        """ 
+        """
         if self.axis_max > x and x > self.axis_low_water:
             return self.DOWN
         if self.axis_max > y and y > self.axis_low_water:
@@ -156,16 +164,19 @@ class ImuPositionReporter:
             return self.RIGHT
         return self.UNKNOWN
 
+
 # XIAO NRF52840 Sense board IMU helper routines
 def xiao_nrf52840_sense_imu_power_pin():
     pwr = digitalio.DigitalInOut(board.IMU_PWR)
     pwr.direction = digitalio.Direction.OUTPUT
     return pwr
 
+
 def xiao_nrf52840_sense_imu_enable_power(pin):
     pin.value = True
     # Give the IMU time to powerup before we try to scan it on I2C bus
     time.sleep(0.25)
+
 
 def xiao_nrf52840_sense_imu_i2c():
     i2c = busio.I2C(board.IMU_SCL, board.IMU_SDA)
