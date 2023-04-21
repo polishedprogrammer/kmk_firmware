@@ -1,3 +1,66 @@
+"""LSM6DS3 IMU (Inertial Measurement Unit)
+
+Overview
+========
+
+Send keystrokes when the keyboard is oriented in a specific way.
+
+I wrote this KMK module to provide automatic monitor rotation for
+MacOS. I used a Seeedstudio XAIO NRF52840 Sense Board to create a
+'keyboard' because it runs KMK firmware well and includes an IMU; no
+soldering required.
+
+Connect your XIAO-dev-board-based-keyboard to your monitor with some
+double sided sticky tape and plug it into a USB port. Now your
+keyboard will change orientation along with your monitor when you
+rotate it. In addition, when you rotate the monitor the keyboard will
+send keystrokes to your computer. Use Hammerspoon or some other
+software to register your special keystrokes with a method that
+changes your system preferences to rotate the display.
+
+I used Hammerspoon to change the system settings in response to
+special keys, but you might use Display Rotation Menu or Lunar, as
+another example.
+
+I use Hammerspoon for all sorts of things. It's very powerful. But it
+might be too heavy-weight for merely controlling your monitor's
+rotation. In addition, Hammerspoon cannot control display rotation on
+M1/M2 based Macs at this time. I have tested v1.5 of Display Rotation
+Menu with MacOS 12.6.5 on M1 silicon. It works well.
+
+Links for Support Software
+==========================
+
+Hammerspoon - https://www.hammerspoon.org/
+Display Rotation Menu - https://magesw.com/displayrotation/
+Luna - https://github.com/alin23/Lunar
+
+Hardware
+========
+
+This module depends on the LSM6DS3 driver! I downloaded a binary
+version of the library for CircuitPython8 and copied it to the 'lib'
+directory.
+
+Driver Download - https://learn.adafruit.com/pages/24603/elements/3122193/download?type=zip
+Misc Setup Info - https://github.com/adafruit/Adafruit_CircuitPython_LSM6DS
+Driver Source Page - https://learn.adafruit.com/adafruit-lsm6ds3tr-c-lis3mdl-precision-9-dof-imu/python-circuitpython
+
+Keyboards That Use This Module
+==============================
+
+You will also need a 'board' to glue this all together. Look for
+boards/monitor-mate. You can use it on a Seeedstudio XAIO NRF52840
+board. Check the README.md file in that board directory for
+instructions to put it together.
+
+Get your Seeedstudio XAIO NRF52840 board from this link, or you can
+find them on Amazon. I got mine from Amazon the day after I ordered
+it.
+
+Development Board - https://www.seeedstudio.com/Seeed-XIAO-BLE-Sense-nRF52840-p-5253.html
+
+"""
 import board
 import busio
 import digitalio
