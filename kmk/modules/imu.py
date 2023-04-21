@@ -1,0 +1,172 @@
+from supervisor import ticks_ms
+from kmk.modules import Module
+import time
+import board
+import busio
+import digitalio
+from adafruit_lsm6ds.lsm6ds3 import LSM6DS3
+
+class ImuHandler(Module):
+    def __init__(self, up=None, right=None, down=None, left=None, debug=False):
+        """Pass in the key to press when the IMU changes to 'up',
+        'right', 'down', and 'left'. Leave as 'None' to avoid pressing
+        any key in that position.
+
+        """
+        self.up_key = up
+        self.right_key = right
+        self.down_key = down
+        self.left_key = left
+        self.debug = debug
+        self._xiao_nrf52840_sense_imu_setup()
+
+    def on_runtime_enable(self, keyboard):
+        return
+
+    def on_runtime_disable(self, keyboard):
+        return
+
+    def during_bootup(self, keyboard):
+        return
+
+    def before_matrix_scan(self, keyboard):
+        '''
+        Return value will be injected as an extra matrix update
+        '''
+        position, changed = self.imu_reporter.report()
+        if not changed:
+            return
+        if position == ImuPositionReporter.UP and self.up_key is not None:
+            print("up")
+            keyboard.tap_key(self.up_key)
+        elif position == ImuPositionReporter.DOWN and self.down_key is not None:
+            print("down")
+            keyboard.tap_key(self.down_key)
+        elif position == ImuPositionReporter.LEFT and self.left_key is not None:
+            print("left")
+            keyboard.tap_key(self.left_key)
+        elif position == ImuPositionReporter.RIGHT and self.right_key is not None:
+            print("right")
+            keyboard.tap_key(self.right_key)
+
+    def after_matrix_scan(self, keyboard):
+        '''
+        Return value will be replace matrix update if supplied
+        '''
+        return
+
+    def before_hid_send(self, keyboard):
+        return
+
+    def after_hid_send(self, keyboard):
+        return
+
+    def on_powersave_enable(self, keyboard):
+        return
+
+    def on_powersave_disable(self, keyboard):
+        return
+
+    def _xiao_nrf52840_sense_imu_setup(self):
+        self.pwr_pin = xiao_nrf52840_sense_imu_power_pin()
+        xiao_nrf52840_sense_imu_enable_power(self.pwr_pin)
+        self.i2c = xiao_nrf52840_sense_imu_i2c()
+        if self.debug:
+            print("Initialize I2C interface... ", end="")
+        self.sensor = LSM6DS3(self.i2c)
+        if self.debug:
+            print("[Ready]")
+        self.imu_reporter = ImuPositionReporter(self.sensor)
+
+
+class ImuPositionReporter:
+    """Convert accelerometer 'x' and 'y' readings into a
+    direction. Debounce readings and provide hysterisis to provide a
+    quiet, notchy response by calling report().
+
+    Direction legend: hold board with SeedStudio label perpendicular
+    to the ground. USB-C connector points to the direction.
+
+    """
+    UNKNOWN = 0    
+    UP = 1
+    LEFT = 2
+    RIGHT = 3
+    DOWN = 4
+    def __init__(self, sensor, debounce_cycles=4, low_water=8.5):
+        """Pass ctor LSM6DS3 accelerometer object, and optionally a
+        number of debounce_cycles and an axis low water mark.
+
+        A higher debounce_cycles value will help eliminate noise, but
+        result in longer delays. Tune based on your polling loop
+        frequency as needed.
+
+        The low_water value should be between 0 and 10.0. The closer
+        to 10.0 it is, the stricter we'll require a board orientation
+        before reporting that value.
+
+        """
+        self.sensor = sensor
+        self.position = self.UNKNOWN
+        self.debounce_cycles = debounce_cycles
+        self.reading_count = 0
+        self.last_position = self.UNKNOWN
+        self.axis_max = 10.0
+        self.axis_low_water = low_water
+
+    def report(self):
+        """Return a tuple of the direction of the board, and a bool
+        indicating if the position changed from last time.
+
+        The direction is calculated with hysterisis and debounced to
+        prevent spurious readings.
+
+        """
+        result = (self.position, False)
+        x, y, z = self.sensor.acceleration
+        pos = self._xyToPosition(x, y)
+        if pos != self.UNKNOWN:
+            # Potential new position
+            if pos == self.last_position:
+                self.reading_count += 1
+            else:
+                self.reading_count = 0
+            if pos != self.position and pos == self.last_position and self.reading_count > self.debounce_cycles:
+                self.position = pos
+                result = [pos, True]
+        # Report last position with no change
+        self.last_position = pos
+        return result
+
+    def _xyToPosition(self, x, y):
+        """Convert 'x', 'y' accelerometer values into a
+        direction. Ignore 'z'. Return UP, RIGHT, DOWN, or LEFT when
+        the board is almost pointed directly in that direction, or
+        UNKNOWN if somewhere in between. This provides a 'notchy'
+        decoding of the direction.
+
+        """ 
+        if self.axis_max > x and x > self.axis_low_water:
+            return self.DOWN
+        if self.axis_max > y and y > self.axis_low_water:
+            return self.LEFT
+        if -self.axis_max < x and x < -self.axis_low_water:
+            return self.UP
+        if -self.axis_max < y and y < -self.axis_low_water:
+            return self.RIGHT
+        return self.UNKNOWN
+
+# XIAO NRF52840 Sense board IMU helper routines
+def xiao_nrf52840_sense_imu_power_pin():
+    pwr = digitalio.DigitalInOut(board.IMU_PWR)
+    pwr.direction = digitalio.Direction.OUTPUT
+    return pwr
+
+def xiao_nrf52840_sense_imu_enable_power(pin):
+    pin.value = True
+    # Give the IMU time to powerup before we try to scan it on I2C bus
+    time.sleep(0.25)
+
+def xiao_nrf52840_sense_imu_i2c():
+    i2c = busio.I2C(board.IMU_SCL, board.IMU_SDA)
+    return i2c
