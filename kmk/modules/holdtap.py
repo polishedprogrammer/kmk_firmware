@@ -92,7 +92,6 @@ class HoldTap(Module):
             if (is_pressed and not key.meta.tap_interrupted) or (
                 not is_pressed and key.meta.tap_interrupted and self.key_buffer
             ):
-
                 keyboard.cancel_timeout(state.timeout_key)
                 self.key_states[key].activated = ActivationType.INTERRUPTED
                 self.ht_activate_on_interrupt(
@@ -222,7 +221,7 @@ class HoldTap(Module):
             return
 
         reprocess = False
-        for (int_coord, key, is_pressed) in self.key_buffer:
+        for int_coord, key, is_pressed in self.key_buffer:
             keyboard.resume_process_key(self, key, is_pressed, int_coord, reprocess)
             if isinstance(key.meta, HoldTapKeyMeta):
                 reprocess = True

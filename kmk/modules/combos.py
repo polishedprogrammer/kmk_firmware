@@ -300,7 +300,7 @@ class Combos(Module):
             self.reset_combo(keyboard, combo)
 
     def send_key_buffer(self, keyboard):
-        for (int_coord, key, is_pressed) in self._key_buffer:
+        for int_coord, key, is_pressed in self._key_buffer:
             keyboard.resume_process_key(self, key, is_pressed, int_coord)
 
     def activate(self, keyboard, combo):

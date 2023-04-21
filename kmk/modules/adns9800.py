@@ -146,7 +146,6 @@ class ADNS9800(Module):
         return result
 
     def during_bootup(self, keyboard):
-
         self.adns_write(REG.Power_Up_Reset, 0x5A)
         time.sleep(0.1)
         self.adns_read(REG.MOTION)

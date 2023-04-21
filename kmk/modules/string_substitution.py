@@ -168,7 +168,6 @@ class StringSubstitution(Module):
         return
 
     def before_hid_send(self, keyboard):
-
         if self._state == State.LISTENING:
             return
 

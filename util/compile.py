@@ -17,7 +17,6 @@ def clean():
 
 
 def compile():
-
     shutil.copy2('boot.py', 'build/boot.py')
 
     # Make sure the full folder heirarchy exists
@@ -34,7 +33,7 @@ def compile():
 if __name__ == '__main__':
     try:
         subprocess.run('mpy-cross', stdout=devnull, stderr=devnull)
-    except (FileNotFoundError):
+    except FileNotFoundError:
         print()
         print('`mpy-cross` not found. Ensure mpy-cross is working from a shell.')
         print()

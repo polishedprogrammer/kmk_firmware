@@ -145,7 +145,6 @@ class Oled(Extension):
         return
 
     def after_matrix_scan(self, sandbox):
-
         return
 
     def before_hid_send(self, sandbox):

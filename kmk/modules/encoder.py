@@ -10,11 +10,9 @@ from kmk.modules import Module
 
 
 class BaseEncoder:
-
     VELOCITY_MODE = True
 
     def __init__(self, is_inverted=False, divisor=4):
-
         self.is_inverted = is_inverted
         self.divisor = divisor
 
@@ -157,7 +155,6 @@ class EncoderPin:
 
 class I2CEncoder(BaseEncoder):
     def __init__(self, i2c, address, is_inverted=False):
-
         try:
             from adafruit_seesaw import digitalio, neopixel, rotaryio, seesaw
         except ImportError:
@@ -182,7 +179,6 @@ class I2CEncoder(BaseEncoder):
         self._state = self.encoder.position
 
     def update_state(self):
-
         # Rotation events
         new_state = self.encoder.position
         if new_state != self._state:

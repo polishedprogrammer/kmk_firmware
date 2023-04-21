@@ -233,7 +233,6 @@ class DynamicSequences(Module):
         return
 
     def before_hid_send(self, keyboard):
-
         if not self.status:
             return
 

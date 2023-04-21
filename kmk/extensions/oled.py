@@ -173,7 +173,6 @@ class Oled(Extension):
         return
 
     def during_bootup(self, keyboard):
-
         for module in keyboard.modules:
             if isinstance(module, Split):
                 self.split_side = module.split_side
@@ -236,7 +235,6 @@ class Oled(Extension):
 
     def dim(self):
         if self.powersave:
-
             if (
                 self.powersave_off_time_ms
                 and ticks_diff(ticks_ms(), self.timer_start)
